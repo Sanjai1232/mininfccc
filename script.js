@@ -1,123 +1,79 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const scanButton = document.getElementById("scanButton");
-    const loading = document.getElementById("loading");
-    const bikeInfo = document.getElementById("bikeInfo");
-    const bikeImage = document.getElementById("bikeImage");
-    const bikeDetails = document.getElementById("bikeDetails");
-    const ownerDetails = document.getElementById("ownerDetails");
+document.addEventListener("DOMContentLoaded", () => {
+    const baseUrl = "https://nfc-rental-system2-1.onrender.com/items/";
+    const params = new URLSearchParams(window.location.search);
+    const uniqueId = params.get("id");
+    const bikeContainer = document.getElementById("bike-container");
+    const editBtn = document.getElementById("edit-btn");
+    const modal = document.getElementById("edit-modal");
+    const closeModal = document.getElementById("close-modal");
+    const saveBtn = document.getElementById("save-btn");
+    const passwordInput = document.getElementById("password");
+    const editForm = document.getElementById("edit-form");
 
-    const editBikeBtn = document.getElementById("editBike");
-    const editOwnerBtn = document.getElementById("editOwner");
-    const editModal = document.getElementById("editModal");
-    const closeModal = document.querySelector(".close");
-    const saveEditBtn = document.getElementById("saveEdit");
-    const editField = document.getElementById("editField");
-    const passwordField = document.getElementById("password");
+    if (uniqueId) {
+        fetchBikeData(uniqueId);
+    }
 
-    const baseUrl = "https://nfc-rental-system2-1.onrender.com/items";
-    let jsonData = {}; // Store fetched data
-    let currentEditKey = "";
-    let itemId = ""; // Store unique ID
-
-    scanButton.addEventListener("click", function () {
-        scanButton.classList.add("hidden");
-        loading.classList.remove("hidden");
-
-        setTimeout(() => {
-            fetchBikeData();
-        }, 2000);
-    });
-
-    function fetchBikeData() {
-        const urlParams = new URLSearchParams(window.location.search);
-        itemId = urlParams.get("id");
-
-        if (!itemId) {
-            alert("Invalid NFC tag. No ID found!");
-            return;
-        }
-
-        fetch(`${baseUrl}/${itemId}`)
+    function fetchBikeData(id) {
+        fetch(baseUrl + id)
             .then(response => response.json())
             .then(data => {
-                jsonData = data;
                 displayBikeData(data);
+                editBtn.classList.remove("hidden");
             })
-            .catch(error => {
-                console.error("Error fetching bike details:", error);
-            });
+            .catch(error => console.error("Error fetching bike details:", error));
     }
 
     function displayBikeData(data) {
-        loading.classList.add("hidden");
-        bikeInfo.classList.remove("hidden");
-
-        bikeImage.src = data.image || "default-bike.jpg";
-        bikeDetails.innerHTML = `
-            <strong>Name:</strong> ${data.bikeName} <br>
-            <strong>Model:</strong> ${data.model} <br>
-            <strong>Rent:</strong> ₹${data.rent}
-        `;
-
-        ownerDetails.innerHTML = `
-            <strong>Owner:</strong> ${data.ownerName} <br>
-            <strong>Contact:</strong> ${data.contact}
+        bikeContainer.innerHTML = `
+            <div class="bike-card">
+                <h2>${data.bikeName}</h2>
+                <p>Model: ${data.model}</p>
+                <p>Owner: ${data.ownerName}</p>
+                <p>Contact: ${data.contact}</p>
+                <p>Rent: $${data.rent}</p>
+                <button id="edit-btn" class="btn edit-btn">Edit Details</button>
+            </div>
         `;
     }
 
-    editBikeBtn.addEventListener("click", () => openEditModal("bike"));
-    editOwnerBtn.addEventListener("click", () => openEditModal("owner"));
-    closeModal.addEventListener("click", () => (editModal.style.display = "none"));
+    editBtn.addEventListener("click", () => {
+        modal.classList.add("active");
+    });
 
-    function openEditModal(type) {
-        editModal.style.display = "block";
-        currentEditKey = type;
-    }
+    closeModal.addEventListener("click", () => {
+        modal.classList.remove("active");
+    });
 
-    saveEditBtn.addEventListener("click", function () {
-        const newValue = editField.value.trim();
-        const password = passwordField.value.trim();
-
-        if (!newValue || !password) {
-            alert("Please enter a value and password.");
-            return;
-        }
-
-        const correctPassword = "admin123"; // Change for security
-        if (password !== correctPassword) {
+    editForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const password = passwordInput.value;
+        if (password !== "your-secure-password") {
             alert("Incorrect password!");
             return;
         }
 
-        if (currentEditKey === "bike") {
-            jsonData.bikeName = newValue;
-        } else if (currentEditKey === "owner") {
-            jsonData.ownerName = newValue;
-        }
+        const updatedData = {
+            bikeName: document.getElementById("bike-name").value,
+            model: document.getElementById("model").value,
+            ownerName: document.getElementById("owner-name").value,
+            contact: document.getElementById("contact").value,
+            rent: document.getElementById("rent").value
+        };
 
-        updateBackend(jsonData);
-    });
-
-    function updateBackend(updatedData) {
-        if (!itemId) {
-            alert("Invalid ID. Cannot update.");
-            return;
-        }
-
-        fetch(`${baseUrl}/${itemId}`, {
+        fetch(baseUrl + uniqueId, {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(updatedData),
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(updatedData)
         })
         .then(response => response.json())
-        .then(() => {
+        .then(data => {
             alert("Details updated successfully!");
-            editModal.style.display = "none";
-            displayBikeData(updatedData);
+            modal.classList.remove("active");
+            fetchBikeData(uniqueId);
         })
-        .catch(error => {
-            console.error("Error updating details:", error);
-            alert("Failed to update details.");
-        });
-    }
+        .catch(error => console.error("Error updating bike details:", error));
+    });
 });

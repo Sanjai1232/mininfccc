@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFC Bike Rental</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>NFC Bike Rental</h1>
+        <button id="scanButton" class="btn">Scan NFC</button>
+        <div id="loading" class="hidden">Scanning...</div>
+        
+        <div id="bikeInfo" class="hidden">
+            <div class="bike-card">
+                <h2>Bike Details</h2>
+                <img id="bikeImage" src="" alt="Bike Image">
+                <p id="bikeDetails"></p>
+                <button id="editBike" class="btn edit-btn">Edit</button>
+            </div>
+            
+            <div class="owner-card">
+                <h2>Owner Details</h2>
+                <p id="ownerDetails"></p>
+                <button id="editOwner" class="btn edit-btn">Edit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Editing -->
+    <div id="editModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Edit Details</h2>
+            <input type="text" id="editField" placeholder="Enter new value">
+            <input type="password" id="password" placeholder="Enter password">
+            <button id="saveEdit" class="btn save-btn">Save</button>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
